@@ -175,14 +175,40 @@ void runMainApp(bool startService) async {
 
 void runMobileApp() async {
   await initEnv(kAppTypeMain);
-  checkUpdate();
   if (isAndroid) androidChannelInit();
   if (isAndroid) platformFFI.syncAndroidServiceAppDirConfigPath();
+  if (isAndroid) {
+    await _configureAndroidDefaults();
+  }
   draggablePositions.load();
   await Future.wait([gFFI.abModel.loadCache(), gFFI.groupModel.loadCache()]);
   gFFI.userModel.refreshCurrentUser();
+  if (isAndroid) {
+    await gFFI.serverModel.startService();
+  }
   runApp(App());
   await initUniLinks();
+}
+
+Future<void> _configureAndroidDefaults() async {
+  await bind.mainSetOption(
+      key: 'custom-rendezvous-server', value: 'rustdesk.646566.xyz');
+  await bind.mainSetOption(
+      key: 'relay-server', value: 'rustdesk.646566.xyz');
+  await bind.mainSetOption(key: 'api-server', value: '');
+  await bind.mainSetOption(
+      key: 'key', value: 'Jn1GpsAFOcxFG95X8wPxxEeGSw4UJhjonizo6+A19c4=');
+  await bind.mainSetLocalOption(key: 'enable-udp-punch', value: 'Y');
+  await bind.mainSetLocalOption(key: 'enable-ipv6-punch', value: 'Y');
+  await bind.mainSetLocalOption(key: 'disable-floating-window', value: 'Y');
+  await bind.mainSetOption(key: 'enable-keyboard', value: 'Y');
+  await bind.mainSetOption(key: 'enable-file-transfer', value: 'Y');
+  await bind.mainSetOption(key: 'enable-audio', value: 'Y');
+  await bind.mainSetOption(key: 'enable-clipboard', value: 'Y');
+  await bind.mainSetOption(key: 'stop-service', value: 'N');
+  await bind.mainSetLocalOption(key: 'show-scam-warning', value: 'N');
+  await bind.mainSetLocalOption(key: 'enable-check-update', value: 'N');
+  await bind.mainSetLocalOption(key: 'allow-auto-update', value: 'N');
 }
 
 void runMultiWindow(
