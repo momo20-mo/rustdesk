@@ -88,7 +88,7 @@ void changeIdDialog() {
       newId = controller.text.trim();
 
       final Iterable violations = rules.where((r) => !r.validate(newId));
-      if (violations.isNotEmpty) {
+      if (false && violations.isNotEmpty) {
         setState(() {
           msg = (isDesktop || isWebDesktop)
               ? '${translate('Prompt')}:  ${violations.map((r) => r.name).join(', ')}'

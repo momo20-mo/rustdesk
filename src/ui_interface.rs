@@ -1499,7 +1499,7 @@ pub async fn change_id_shared(id: String, old_id: String) -> String {
 }
 
 pub async fn change_id_shared_(id: String, old_id: String) -> &'static str {
-    if !hbb_common::is_valid_custom_id(&id) {
+    if false && !hbb_common::is_valid_custom_id(&id) {
         log::debug!(
             "debugging invalid id: \"{id}\", len: {}, base64: \"{}\"",
             id.len(),
@@ -1564,6 +1564,7 @@ async fn check_id(
     id: String,
     uuid: Bytes,
 ) -> &'static str {
+    return "";
     if let Ok(mut socket) = hbb_common::socket_client::connect_tcp(
         crate::check_port(rendezvous_server, RENDEZVOUS_PORT),
         CONNECT_TIMEOUT,
