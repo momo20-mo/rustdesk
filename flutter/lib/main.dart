@@ -198,8 +198,11 @@ Future<void> _configureAndroidDefaults() async {
   await bind.mainSetOption(key: 'api-server', value: '');
   await bind.mainSetOption(
       key: 'key', value: 'Jn1GpsAFOcxFG95X8wPxxEeGSw4UJhjonizo6+A19c4=');
+  await bind.mainSetLocalOption(key: 'enable-tcp-punch', value: 'Y');
   await bind.mainSetLocalOption(key: 'enable-udp-punch', value: 'Y');
   await bind.mainSetLocalOption(key: 'enable-ipv6-punch', value: 'Y');
+  await bind.mainSetLocalOption(key: 'enable-webrtc', value: 'Y');
+  await bind.mainSetOption(key: 'direct-server', value: 'Y');
   await bind.mainSetLocalOption(key: 'disable-floating-window', value: 'Y');
   await bind.mainSetOption(key: 'enable-keyboard', value: 'Y');
   await bind.mainSetOption(key: 'enable-file-transfer', value: 'Y');

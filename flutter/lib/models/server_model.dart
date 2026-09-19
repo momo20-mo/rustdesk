@@ -201,9 +201,14 @@ class ServerModel with ChangeNotifier {
   /// audio true by default (if permission on) (false default < Android 10)
   /// file true by default (if permission on)
   checkAndroidPermission() async {
-    // audio
-    final audioOption = await bind.mainGetOption(key: kOptionEnableAudio);
-    _audioOk = audioOption != 'N';
+    if (androidVersion < 30 ||
+        !await AndroidPermissionManager.check(kRecordAudio)) {
+      _audioOk = false;
+      bind.mainSetOption(key: kOptionEnableAudio, value: "N");
+    } else {
+      final audioOption = await bind.mainGetOption(key: kOptionEnableAudio);
+      _audioOk = audioOption != 'N';
+    }
 
     // Android file transfer is confined to app-specific storage. Files enter
     // and leave the workspace through Android's system document picker.
