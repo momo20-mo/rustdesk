@@ -14,45 +14,38 @@ class UppercaseValidationRule extends ValidationRule {
   String get name => translate('uppercase');
   @override
   bool validate(String value) {
-    return value.runes.any((int rune) {
-      var character = String.fromCharCode(rune);
-      return character.toUpperCase() == character &&
-          character.toLowerCase() != character;
-    });
+    // ✅ 修改：强制返回 true，取消大写字母限制
+    return true; 
   }
 }
 
 class LowercaseValidationRule extends ValidationRule {
   @override
   String get name => translate('lowercase');
-
   @override
   bool validate(String value) {
-    return value.runes.any((int rune) {
-      var character = String.fromCharCode(rune);
-      return character.toLowerCase() == character &&
-          character.toUpperCase() != character;
-    });
+    // ✅ 修改：强制返回 true，取消小写字母限制
+    return true;
   }
 }
 
 class DigitValidationRule extends ValidationRule {
   @override
   String get name => translate('digit');
-
   @override
   bool validate(String value) {
-    return value.contains(RegExp(r'[0-9]'));
+    // ✅ 修改：强制返回 true，取消数字限制
+    return true;
   }
 }
 
 class SpecialCharacterValidationRule extends ValidationRule {
   @override
   String get name => translate('special character');
-
   @override
   bool validate(String value) {
-    return value.contains(RegExp(r'[!@#$%^&*(),.?":{}|<>]'));
+    // ✅ 修改：强制返回 true，取消特殊字符限制
+    return true;
   }
 }
 
@@ -65,10 +58,12 @@ class MinCharactersValidationRule extends ValidationRule {
 
   @override
   bool validate(String value) {
-    return value.length >= _numberOfCharacters;
+    // ✅ 修改：取消长度不小于8的限制。
+    // 建议保留 value.isNotEmpty，防止设置完全为空的密码导致无法登录。
+    // 如果你想允许空密码，可以改成 return true;
+    return true; 
   }
 }
-
 class PasswordStrengthIndicator extends StatelessWidget {
   final RxString password;
   final double weakMedium = 0.33;
