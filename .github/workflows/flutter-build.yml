@@ -13,10 +13,7 @@ on:
 # NOTE: F-Droid builder script 'flutter/build_fdroid.sh' reads environment
 # variables from this workflow!
 # 在主工作流文件的顶层 env 中添加
-env:
-  # ... 其他现有变量 ...
-  
-  # 【核心修复】将 secrets 显式映射为环境变量
+
 
 env:
   RUST_VERSION: "1.75"
