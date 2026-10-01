@@ -12,6 +12,11 @@ on:
 
 # NOTE: F-Droid builder script 'flutter/build_fdroid.sh' reads environment
 # variables from this workflow!
+# 在主工作流文件的顶层 env 中添加
+env:
+  # ... 其他现有变量 ...
+  
+  # 【核心修复】将 secrets 显式映射为环境变量
 
 env:
   RUST_VERSION: "1.75"
@@ -23,8 +28,12 @@ env:
   VERSION: "1.5.0"
   NDK_VERSION: "r28c"
   # signing keys env variable checks
+  
   ANDROID_SIGNING_KEY: "${{ secrets.ANDROID_SIGNING_KEY }}"
-  UPLOAD_ARTIFACT: "${{ inputs.upload-artifact }}"
+  ANDROID_ALIAS: "${{ secrets.ANDROID_ALIAS }}"
+  ANDROID_KEY_STORE_PASSWORD: "${{ secrets.ANDROID_KEY_STORE_PASSWORD }}"
+  ANDROID_KEY_PASSWORD: "${{ secrets.ANDROID_KEY_PASSWORD }}"
+  UPLOAD_ARTIFACT: "${{ inputs.upload-artifact }}" 
 
 jobs:
   # 必须任务：生成 bridge 文件，Android 构建依赖此项
@@ -268,7 +277,7 @@ jobs:
 
       - uses: r0adkll/sign-android-release@349ebdef58775b1e0d8099458af0816dc79b6407 # v1
         name: Sign app APK
-        if: env.ANDROID_SIGNING_KEY != null
+        if: always()
         id: sign-rustdesk
         with:
           releaseDirectory: ./signed-apk
@@ -280,14 +289,14 @@ jobs:
           BUILD_TOOLS_VERSION: ${{ env.ANDROID_SIGN_TOOL_VERSION }}
 
       - name: Upload Artifacts
-        if: env.ANDROID_SIGNING_KEY != null && env.UPLOAD_ARTIFACT == 'true'
+        if: always()
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.apk
           path: ${{steps.sign-rustdesk.outputs.signedReleaseFile}}
 
       - name: Publish signed apk package
-        if: env.ANDROID_SIGNING_KEY != null && env.UPLOAD_ARTIFACT == 'true'
+        if: always()
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
         with:
           prerelease: true
@@ -296,7 +305,7 @@ jobs:
             ${{steps.sign-rustdesk.outputs.signedReleaseFile}}
 
       - name: Publish unsigned apk package
-        if: env.ANDROID_SIGNING_KEY == null && env.UPLOAD_ARTIFACT == 'true'
+        if: always()
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
         with:
           prerelease: true
