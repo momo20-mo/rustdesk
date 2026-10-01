@@ -11,15 +11,6 @@ vcpkg_from_github(
         0004-remove-library-suffixes.patch
 )
 
-foreach(_script IN ITEMS
-    "${SOURCE_PATH}/configure"
-    "${SOURCE_PATH}/build/make/configure.sh"
-)
-    file(READ "${_script}" _contents)
-    string(REPLACE "\r\n" "\n" _contents "${_contents}")
-    file(WRITE "${_script}" "${_contents}")
-endforeach()
-
 if(CMAKE_HOST_WIN32)
     vcpkg_acquire_msys(MSYS_ROOT PACKAGES make perl)
     set(ENV{PATH} "${MSYS_ROOT}/usr/bin;$ENV{PATH}")

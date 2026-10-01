@@ -117,11 +117,7 @@ build_ffmpeg() {
 
     echo "=== CONFIGURING ==="
 
-    # Bash parses this generated case arm only when the closing pattern delimiter
-    # is separated from the literal plus signs.
-    sed -i 's/\r$//' "$PATH_TO_SRC_DIR/configure"
-    sed -i 's/-lstdc++)/-lstdc++ )/' "$PATH_TO_SRC_DIR/configure"
-    bash "$PATH_TO_SRC_DIR/configure" "--prefix=$PATH_TO_PACKAGE_DIR" @CONFIGURE_OPTIONS@ --arch=${BUILD_ARCH} ${!OPTION_VARIABLE} $@
+    sh "$PATH_TO_SRC_DIR/configure" "--prefix=$PATH_TO_PACKAGE_DIR" @CONFIGURE_OPTIONS@ --arch=${BUILD_ARCH} ${!OPTION_VARIABLE} $@
 
     echo "=== BUILDING ==="
 
