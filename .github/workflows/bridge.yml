@@ -17,28 +17,11 @@ env:
 
 jobs:
   generate_bridge:
-    if: ${{ inputs.include_flutter_3_44 || matrix.job.flutter-version != '3.44.8' }}
     runs-on: ${{ matrix.job.os }}
     strategy:
       fail-fast: false
       matrix:
-        job:
-          # Default bridge for every platform still on Flutter 3.24.5 (generated with 3.22.3).
-          - {
-              target: x86_64-unknown-linux-gnu,
-              os: ubuntu-22.04,
-              extra-build-args: "",
-              flutter-version: "3.22.3",
-              artifact-name: "bridge-artifact",
-            }
-          # Dedicated bridge for the Windows and macOS arm64 builds (Flutter 3.44); runs in parallel.
-          - {
-              target: x86_64-unknown-linux-gnu,
-              os: ubuntu-22.04,
-              extra-build-args: "",
-              flutter-version: "3.44.8",
-              artifact-name: "bridge-artifact-flutter-3.44",
-            }
+        job: ${{ fromJSON(inputs.include_flutter_3_44 && '[{"target":"x86_64-unknown-linux-gnu","os":"ubuntu-22.04","extra-build-args":"","flutter-version":"3.22.3","artifact-name":"bridge-artifact"},{"target":"x86_64-unknown-linux-gnu","os":"ubuntu-22.04","extra-build-args":"","flutter-version":"3.44.8","artifact-name":"bridge-artifact-flutter-3.44"}]' || '[{"target":"x86_64-unknown-linux-gnu","os":"ubuntu-22.04","extra-build-args":"","flutter-version":"3.22.3","artifact-name":"bridge-artifact"}]') }}
     steps:
       - name: Checkout source code
         uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5 # v4
