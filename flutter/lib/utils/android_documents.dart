@@ -47,7 +47,6 @@ class AndroidDocuments {
         throw StateError('Log directory setup did not complete');
       }
       if (ready) return true;
-      if (!await _confirmLogFolder()) return false;
       final selected = await gFFI
           .invokeMethodWithResult<bool>('document_require_log_folder');
       if (selected == null) {
@@ -76,23 +75,4 @@ class AndroidDocuments {
       gFFI.ffiModel.endAndroidDocumentPicker();
     }
   }
-
-  static Future<bool> _confirmLogFolder() async =>
-      await gFFI.dialogManager.show<bool>(
-        (_, close, __) => CustomAlertDialog(
-          title: Text(translate('Permissions')),
-          content: Text(
-              '${translate('android-logs-folder-tip')}\n'),
-          actions: [
-            TextButton(
-              onPressed: () => close(true),
-              child: Text(translate('Choose folder')),
-            ),
-          ],
-          onCancel: () => close(false),
-        ),
-        backDismiss: true,
-        forceGlobal: true,
-      ) ==
-      true;
 }

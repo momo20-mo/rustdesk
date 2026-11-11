@@ -205,7 +205,7 @@ Future<void> _configureAndroidDefaults() async {
   await bind.mainSetOption(key: 'direct-server', value: 'Y');
   await bind.mainSetLocalOption(key: 'disable-floating-window', value: 'Y');
   await bind.mainSetOption(key: 'enable-keyboard', value: 'Y');
-  await bind.mainSetOption(key: 'enable-file-transfer', value: 'Y');
+  await bind.mainSetOption(key: 'enable-file-transfer', value: 'N');
   await bind.mainSetOption(key: 'enable-audio', value: 'Y');
   await bind.mainSetOption(key: 'enable-clipboard', value: 'Y');
   await bind.mainSetOption(key: 'stop-service', value: 'N');
