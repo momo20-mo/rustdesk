@@ -388,13 +388,19 @@ class ServerModel with ChangeNotifier {
           debugPrint('Folder setup failed; continuing service startup');
         }
       }
-      await checkRequestNotificationPermission();
-      startService();
+       await checkRequestNotificationPermission();
+     startService();
     }
   }
 
   /// Start the screen sharing service.
   Future<void> startService() async {
+    if (isAndroid) {
+      if (!await AndroidPermissionManager.check(kRecordAudio)) {
+        await AndroidPermissionManager.request(kRecordAudio);
+      }
+      await checkRequestNotificationPermission();
+    }
     _isStart = true;
     notifyListeners();
     parent.target?.ffiModel.updateEventListener(parent.target!.sessionId, "");
