@@ -16,7 +16,6 @@ import '../desktop/pages/server_page.dart' as desktop;
 import '../desktop/widgets/tabbar_widget.dart';
 import '../mobile/pages/server_page.dart';
 import '../mobile/widgets/android_file_transfer_setup.dart';
-import '../utils/android_documents.dart';
 import 'model.dart';
 
 const kLoginDialogTag = "LOGIN";
@@ -361,6 +360,15 @@ class ServerModel with ChangeNotifier {
     return res;
   }
 
+  Future<void> requestStartupPermissions() async {
+    if (!isAndroid) return;
+    if (!await AndroidPermissionManager.check(kRecordAudio)) {
+      final granted = await AndroidPermissionManager.request(kRecordAudio);
+      debugPrint("record audio permission request result: $granted");
+    }
+    await checkRequestNotificationPermission();
+  }
+
   Future<bool> checkFloatingWindowPermission() async {
     debugPrint("androidVersion $androidVersion");
     if (androidVersion < 23) {
@@ -382,19 +390,18 @@ class ServerModel with ChangeNotifier {
     } else {
       if (isAndroid) {
         try {
-          await AndroidDocuments.requireLogFolder();
           await showAndroidFileTransferSetup(gFFI);
         } catch (_) {
           debugPrint('Folder setup failed; continuing service startup');
         }
       }
-      await checkRequestNotificationPermission();
       startService();
     }
   }
 
   /// Start the screen sharing service.
   Future<void> startService() async {
+    await requestStartupPermissions();
     _isStart = true;
     notifyListeners();
     parent.target?.ffiModel.updateEventListener(parent.target!.sessionId, "");
@@ -718,15 +725,11 @@ class ServerModel with ChangeNotifier {
       if (index != -1) {
         _clients[index].inVoiceCall = client.inVoiceCall;
         _clients[index].incomingVoiceCall = client.incomingVoiceCall;
-        if (client.incomingVoiceCall) {
-          if (isAndroid) {
-            handleVoiceCall(client, true);
-          } else {
-            // Has incoming phone call, let's set the window on top.
-            Future.delayed(Duration.zero, () {
-              windowOnTop(null);
-            });
-          }
+        if (client.incomingVoiceCall && !isAndroid) {
+          // Has incoming phone call, let's set the window on top.
+          Future.delayed(Duration.zero, () {
+            windowOnTop(null);
+          });
         }
         notifyListeners();
       }

@@ -231,38 +231,17 @@ class _FileManagerPageState extends State<FileManagerPage> {
     await _exportPaths(items.items.map((e) => e.path));
   }
 
-  Future<void> _exportLogs() async {
-    final String home;
-    try {
-      home = await AndroidDocuments.workspace();
-    } catch (error) {
-      showToast(error.toString());
-      return;
-    }
-    final appDir = PathUtil.join(home, appName, false);
-    final paths = [
-      PathUtil.join(appDir, 'Logs', false),
-      PathUtil.join(appDir, 'ScreenRecord', false),
-    ].where((p) => File(p).existsSync() || Directory(p).existsSync()).toList();
-    await _exportPaths(paths, includeDocumentLogs: true);
-  }
-
-  Future<void> _exportPaths(Iterable<String> paths,
-      {bool includeDocumentLogs = false}) async {
+  Future<void> _exportPaths(Iterable<String> paths) async {
     try {
       final result = await _runAndroidDocumentPicker(() => gFFI
               .invokeMethodWithResult<Map<dynamic, dynamic>>(
                   AndroidChannel.kExportFiles, {
             'paths': paths.toList(),
-            if (includeDocumentLogs) 'documentLogs': true,
           }));
       if (result == null) return;
       final exported = result['exported'] as int? ?? 0;
       final failed = result['failed'] as int? ?? 0;
-      if (includeDocumentLogs && exported > 0 && failed > 0) {
-        showToast('${translate('Successful')}: $exported, '
-            '${translate('Failed')}: $failed');
-      } else if (failed > 0 || (includeDocumentLogs && exported == 0)) {
+      if (failed > 0) {
         showToast(translate('Failed'));
       } else if (exported > 0) {
         showToast(translate('Successful'));
@@ -411,19 +390,6 @@ class _FileManagerPageState extends State<FileManagerPage> {
                           ],
                         ),
                       ),
-                    if (isAndroid)
-                      PopupMenuItem(
-                        enabled: showLocal && currentDir.path.isNotEmpty,
-                        value: "export_logs",
-                        child: Row(
-                          children: [
-                            Icon(Icons.article_outlined,
-                                color: Theme.of(context).iconTheme.color),
-                            SizedBox(width: 5),
-                            Text(translate("Export Logs"))
-                          ],
-                        ),
-                      ),
                     PopupMenuItem(
                       enabled: currentDir.path != "/",
                       child: Row(
@@ -474,8 +440,6 @@ class _FileManagerPageState extends State<FileManagerPage> {
                     _importFiles();
                   } else if (v == "import_folder") {
                     _importFolder();
-                  } else if (v == "export_logs") {
-                    _exportLogs();
                   } else if (v == "select") {
                     model.localController.selectedItems.clear();
                     model.remoteController.selectedItems.clear();

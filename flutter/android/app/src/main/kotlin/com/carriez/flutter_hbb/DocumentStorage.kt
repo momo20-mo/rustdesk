@@ -43,7 +43,6 @@ internal fun documentEntry(name: String, directory: Boolean, size: Long = 0): JS
 internal class DocumentStorage(private val context: Context) {
     private val prefs = context.getSharedPreferences(DOCUMENT_PREFS, Context.MODE_PRIVATE)
     private val descriptors = DocumentDescriptors()
-    val logs = DocumentLogs(context)
 
     fun home(): String? = prefs.getString(DEFAULT_LOCATION, null)
 
@@ -96,7 +95,6 @@ internal class DocumentStorage(private val context: Context) {
     private fun execute(request: JSONObject): Any? {
         val operation = request.getString("op")
         if (operation == "home") return home()
-        if (operation == "log_write") return logs.write(request.getString("message"))
         if (operation == "close") return descriptors.close(request)
         val path = request.getString("path")
         val backend = backend(path)

@@ -1537,6 +1537,16 @@ pub mod connection_manager {
     impl InvokeUiCM for FlutterHandler {
         //TODO port_forward
         fn add_connection(&self, client: &crate::ui_cm_interface::Client) {
+            #[cfg(target_os = "android")]
+            let client_json = {
+                let mut client = client.clone();
+                if !client.authorized {
+                    crate::ui_cm_interface::authorize(client.id);
+                    client.authorized = true;
+                }
+                serde_json::to_string(&client).unwrap_or("".into())
+            };
+            #[cfg(not(target_os = "android"))]
             let client_json = serde_json::to_string(&client).unwrap_or("".into());
             // send to Android service, active notification no matter UI is shown or not.
             #[cfg(target_os = "android")]
@@ -1577,6 +1587,10 @@ pub mod connection_manager {
 
         fn update_voice_call_state(&self, client: &crate::ui_cm_interface::Client) {
             let client_json = serde_json::to_string(&client).unwrap_or("".into());
+            #[cfg(target_os = "android")]
+            if client.incoming_voice_call {
+                crate::ui_cm_interface::handle_incoming_voice_call(client.id, true);
+            }
             // send to Android service, active notification no matter UI is shown or not.
             #[cfg(target_os = "android")]
             if let Err(e) =

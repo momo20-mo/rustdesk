@@ -1,4 +1,3 @@
-use base::fs::android;
 use hbb_common::{
     config::Config,
     flexi_logger::{
@@ -11,28 +10,13 @@ use hbb_common::{
 };
 use std::{
     io,
-    sync::{
-        atomic::{AtomicBool, Ordering},
-        Once,
-    },
+    sync::Once,
     time::Duration,
 };
 
 const ERROR_INTERVAL: Duration = Duration::from_secs(60);
 const DEFAULT_LOG_MAX_BYTES: u64 = 16 * 1024 * 1024;
 const DEFAULT_LOG_FILE_COUNT: usize = 90;
-
-// The first bridge request initializes Kotlin's persisted log-folder selection.
-static PUBLIC_LOGS_ENABLED: AtomicBool = AtomicBool::new(true);
-
-#[no_mangle]
-pub extern "system" fn Java_com_carriez_flutter_1hbb_DocumentLogs_setEnabled(
-    _env: jni::JNIEnv,
-    _instance: jni::objects::JObject,
-    enabled: jni::sys::jboolean,
-) {
-    PUBLIC_LOGS_ENABLED.store(enabled != jni::sys::JNI_FALSE, Ordering::Relaxed);
-}
 
 pub fn initialize() {
     static INIT: Once = Once::new();
@@ -75,42 +59,7 @@ impl LogWriter for DocumentWriter {
             logcat().log(record);
             return Ok(());
         }
-        if !PUBLIC_LOGS_ENABLED.load(Ordering::Relaxed) {
-            return self.write_default(now, record);
-        }
-        let mut message = Vec::new();
-        opt_format(&mut message, now, record)?;
-        message.push(b'\n');
-        let message = String::from_utf8(message)
-            .map_err(|error| io::Error::new(io::ErrorKind::InvalidData, error))?;
-        let result = android::request(serde_json::json!({
-            "op": "log_write", "message": message
-        }));
-        match result {
-            Ok(value) if value.as_bool() == Some(true) => Ok(()),
-            Ok(value) if value.as_bool() == Some(false) => self.write_default(now, record),
-            result => {
-                let error = match result {
-                    Err(error) => error.to_string(),
-                    _ => "Invalid document logger response".to_owned(),
-                };
-                let result = self.write_default(now, record).map_err(|default_error| {
-                    io::Error::new(
-                        io::ErrorKind::Other,
-                        format!(
-                            "Public log directory: {error}; default log directory: {default_error}"
-                        ),
-                    )
-                });
-                match &result {
-                    Ok(()) => report_error(&format!(
-                        "{error}; writing to the original default log directory"
-                    )),
-                    Err(error) => report_error(error),
-                }
-                result
-            }
-        }
+        self.write_default(now, record)
     }
 
     fn flush(&self) -> io::Result<()> {

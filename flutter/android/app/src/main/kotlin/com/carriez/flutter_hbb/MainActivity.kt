@@ -63,8 +63,7 @@ class MainActivity : FlutterActivity() {
         data class ExportFiles(
             val sources: List<File>,
             val rejected: Int,
-            val result: MethodChannel.Result,
-            val documentLogs: Boolean = false
+            val result: MethodChannel.Result
         ) : PendingPicker()
     }
 
@@ -225,14 +224,6 @@ class MainActivity : FlutterActivity() {
                 } catch (e: Exception) {
                     Log.e(logTag, "Failed to export selected files", e)
                     failed += pending.sources.size - processed
-                }
-                if (pending.documentLogs) {
-                    try {
-                        exported += (application as MainApplication).documentStorage.logs.exportTo(treeUri)
-                    } catch (error: Exception) {
-                        Log.e(logTag, "Failed to export document logs", error)
-                        failed++
-                    }
                 }
                 runOnUiThread {
                     pending.result.success(mapOf("exported" to exported, "failed" to failed))
@@ -627,22 +618,19 @@ class MainActivity : FlutterActivity() {
                 }
                 EXPORT_FILES -> {
                     val paths = (call.arguments as? Map<*, *>)?.get("paths") as? List<*>
-                    val documentLogs = (call.arguments as? Map<*, *>)?.get("documentLogs") == true
-                    if (paths == null || (paths.isEmpty() && !documentLogs)) {
+                    if (paths == null || paths.isEmpty()) {
                         result.error("invalid_source", "The selected files are outside app-scoped storage", null)
                     } else {
                         val sources = paths.mapNotNull {
                             (it as? String)?.let(::canonicalExportSource)
                         }
                         val rejected = paths.size - sources.size
-                        if (sources.isEmpty() && (!documentLogs ||
-                            !(application as MainApplication).documentStorage.logs.hasPermission())) {
+                        if (sources.isEmpty()) {
                             result.success(mapOf("exported" to 0, "failed" to rejected))
                         } else if (pendingPicker != null) {
                             result.error("picker_in_progress", "Another document picker is already open", null)
                         } else {
-                            pendingPicker = PendingPicker.ExportFiles(
-                                sources, rejected, result, documentLogs = documentLogs)
+                            pendingPicker = PendingPicker.ExportFiles(sources, rejected, result)
                             try {
                                 startActivityForResult(
                                     Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).apply {

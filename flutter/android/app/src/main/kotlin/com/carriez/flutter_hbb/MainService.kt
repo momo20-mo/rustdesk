@@ -142,24 +142,17 @@ class MainService : Service() {
             "update_voice_call_state" -> {
                 try {
                     val jsonObject = JSONObject(arg1)
-                    val id = jsonObject["id"] as Int
-                    val username = jsonObject["name"] as String
-                    val peerId = jsonObject["peer_id"] as String
                     val inVoiceCall = jsonObject["in_voice_call"] as Boolean
                     val incomingVoiceCall = jsonObject["incoming_voice_call"] as Boolean
-                    if (!inVoiceCall) {
-                        if (incomingVoiceCall) {
-                            voiceCallRequestNotification(id, "Voice Call Request", username, peerId)
-                        } else {
-                            if (!switchOutVoiceCall()) {
-                                Log.e(logTag, "switchOutVoiceCall fail")
-                                showVoiceCallError("Failed to switch out voice call.")
-                            }
-                        }
-                    } else {
+                    if (inVoiceCall) {
                         if (!switchToVoiceCall()) {
                             Log.e(logTag, "switchToVoiceCall fail")
                             showVoiceCallError(audioRecordHandle.getVoiceCallStartError())
+                        }
+                    } else if (!incomingVoiceCall) {
+                        if (!switchOutVoiceCall()) {
+                            Log.e(logTag, "switchOutVoiceCall fail")
+                            showVoiceCallError("Failed to switch out voice call.")
                         }
                     }
                 } catch (e: JSONException) {
@@ -949,21 +942,6 @@ class MainService : Service() {
             .setPriority(NotificationCompat.PRIORITY_MAX)
             .setContentTitle("$type ${translate("Established")}")
             .setContentText("$username - $peerId")
-            .build()
-        notificationManager.notify(getClientNotifyID(clientID), notification)
-    }
-
-    private fun voiceCallRequestNotification(
-        clientID: Int,
-        type: String,
-        username: String,
-        peerId: String
-    ) {
-        val notification = notificationBuilder
-            .setOngoing(false)
-            .setPriority(NotificationCompat.PRIORITY_MAX)
-            .setContentTitle(translate("Do you accept?"))
-            .setContentText("$type:$username-$peerId")
             .build()
         notificationManager.notify(getClientNotifyID(clientID), notification)
     }
