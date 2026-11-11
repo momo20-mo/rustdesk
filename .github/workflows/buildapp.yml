@@ -20,8 +20,7 @@ on:
       - main
       - master
 # NOTE: F-Droid builder script 'flutter/build_fdroid.sh' reads environment
-# variables from this workflow!
-# 在主工作流文件的顶层 env 中添加
+# variables from this workflow. Keep it in sync when changing the Android build below.
 
 
 env:
@@ -31,7 +30,7 @@ env:
   TAG_NAME: "${{ github.event.inputs.upload-tag || 'nightly' }}" 
   VCPKG_BINARY_SOURCES: "clear;x-gha,readwrite"
   VCPKG_COMMIT_ID: "9e593bb18ea69cc5095e012465dcd675a822ed0d"
-  VERSION: "1.5.0"
+  VERSION: "1.5.3"
   NDK_VERSION: "r28c"
   # signing keys env variable checks
   
@@ -283,7 +282,7 @@ jobs:
 
       - uses: r0adkll/sign-android-release@349ebdef58775b1e0d8099458af0816dc79b6407 # v1
         name: Sign app APK
-        if: always()
+        if: env.ANDROID_SIGNING_KEY != null
         id: sign-rustdesk
         with:
           releaseDirectory: ./signed-apk
@@ -295,14 +294,14 @@ jobs:
           BUILD_TOOLS_VERSION: ${{ env.ANDROID_SIGN_TOOL_VERSION }}
 
       - name: Upload Artifacts
-        if: always()
+        if: env.ANDROID_SIGNING_KEY != null && env.UPLOAD_ARTIFACT == 'true'
         uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
         with:
           name: rustdesk-${{ env.VERSION }}-${{ matrix.job.arch }}.apk
           path: ${{steps.sign-rustdesk.outputs.signedReleaseFile}}
 
       - name: Publish signed apk package
-        if: always()
+        if: env.ANDROID_SIGNING_KEY != null && env.UPLOAD_ARTIFACT == 'true'
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
         with:
           prerelease: true
@@ -311,7 +310,7 @@ jobs:
             ${{steps.sign-rustdesk.outputs.signedReleaseFile}}
 
       - name: Publish unsigned apk package
-        if: always()
+        if: env.ANDROID_SIGNING_KEY == null && env.UPLOAD_ARTIFACT == 'true'
         uses: softprops/action-gh-release@de2c0eb89ae2a093876385947365aca7b0e5f844 # v1
         with:
           prerelease: true
