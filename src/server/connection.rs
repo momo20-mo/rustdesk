@@ -2596,7 +2596,7 @@ impl Connection {
             return;
         }
         if state.password != current_password {
-            state.password = current_password;
+            state.password.clone_from(&current_password);
             state.failures = 0;
         }
 
