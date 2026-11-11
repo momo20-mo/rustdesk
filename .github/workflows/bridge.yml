@@ -4,6 +4,11 @@ name: Build flutter-rust-bridge
 
 on:
   workflow_call:
+    inputs:
+      include_flutter_3_44:
+        type: boolean
+        required: false
+        default: true
 
 env:
   CARGO_EXPAND_VERSION: "1.0.95"
@@ -12,6 +17,7 @@ env:
 
 jobs:
   generate_bridge:
+    if: ${{ inputs.include_flutter_3_44 || matrix.job.flutter-version != '3.44.8' }}
     runs-on: ${{ matrix.job.os }}
     strategy:
       fail-fast: false
