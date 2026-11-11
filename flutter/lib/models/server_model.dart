@@ -365,6 +365,9 @@ class ServerModel with ChangeNotifier {
     if (!await AndroidPermissionManager.check(kRecordAudio)) {
       final granted = await AndroidPermissionManager.request(kRecordAudio);
       debugPrint("record audio permission request result: $granted");
+      if (!granted) {
+        await bind.mainSetOption(key: kOptionEnableAudio, value: 'N');
+      }
     }
     await checkRequestNotificationPermission();
   }

@@ -1538,8 +1538,6 @@ class AndroidPermissionManager {
       return Future.value(true);
     }
 
-    gFFI.invokeMethod("request_permission", type);
-
     // clear last task
     if (_completer?.isCompleted == false) {
       _completer?.complete(false);
@@ -1557,6 +1555,15 @@ class AndroidPermissionManager {
       _completer = null;
       _current = "";
     });
+    unawaited(gFFI.invokeMethod("request_permission", type).then<void>(
+      (_) {},
+      onError: (Object error) {
+        debugPrint("Permission request failed for $type: $error");
+        if (_current == type && _completer?.isCompleted == false) {
+          complete(type, false);
+        }
+      },
+    ));
     return _completer!.future;
   }
 
