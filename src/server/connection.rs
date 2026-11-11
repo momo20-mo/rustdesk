@@ -2588,12 +2588,15 @@ impl Connection {
         }
 
         let mut state = TEMPORARY_PASSWORD_FAILURES.lock().unwrap();
+        #[cfg(target_os = "android")]
+        let current_password = crate::ui_interface::temporary_password();
+        #[cfg(not(target_os = "android"))]
         let current_password = password::temporary_password();
         if current_password.is_empty() {
             return;
         }
         if state.password != current_password {
-            state.password = current_password;
+            state.password.clone_from(&current_password);
             state.failures = 0;
         }
 
@@ -2607,8 +2610,13 @@ impl Connection {
             return;
         }
 
-        password::update_temporary_password();
-        let new_password = password::temporary_password();
+        #[cfg(target_os = "android")]
+        let new_password = current_password.clone();
+        #[cfg(not(target_os = "android"))]
+        let new_password = {
+            password::update_temporary_password();
+            password::temporary_password()
+        };
         log::warn!(
             "Temporary password rotated after too many consecutive wrong attempts: failures={}, ip={}",
             state.failures,
@@ -2620,6 +2628,9 @@ impl Connection {
 
     fn validate_password(&mut self, allow_permanent_password: bool) -> bool {
         if password::temporary_enabled() {
+            #[cfg(target_os = "android")]
+            let password = crate::ui_interface::temporary_password();
+            #[cfg(not(target_os = "android"))]
             let password = password::temporary_password();
             if self.validate_password_plain(&password) {
                 self.set_conn_audit_primary_auth(ConnAuditPrimaryAuth::TemporaryPassword);

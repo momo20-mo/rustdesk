@@ -1,5 +1,5 @@
 use base::config::keys::{self, *};
-#[cfg(any(target_os = "android", target_os = "ios"))]
+#[cfg(target_os = "ios")]
 use hbb_common::password_security;
 use hbb_common::{
     allow_err,
@@ -639,7 +639,9 @@ pub fn get_connect_status() -> UiStatus {
 
 #[inline]
 pub fn temporary_password() -> String {
-    #[cfg(any(target_os = "android", target_os = "ios"))]
+    #[cfg(target_os = "android")]
+    return "000000".to_owned();
+    #[cfg(target_os = "ios")]
     return password_security::temporary_password();
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
     return TEMPORARY_PASSWD.lock().unwrap().clone();
@@ -647,8 +649,10 @@ pub fn temporary_password() -> String {
 
 #[inline]
 pub fn update_temporary_password() {
-    #[cfg(any(target_os = "android", target_os = "ios"))]
+    #[cfg(target_os = "ios")]
     password_security::update_temporary_password();
+    #[cfg(target_os = "android")]
+    return;
     #[cfg(not(any(target_os = "android", target_os = "ios")))]
     allow_err!(ipc::update_temporary_password());
 }
