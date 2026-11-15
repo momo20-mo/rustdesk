@@ -339,6 +339,12 @@ class FfiModel with ChangeNotifier {
         handleMultipleWindowsSession(evt, sessionId, peerId);
       } else if (name == 'peer_info') {
         handlePeerInfo(evt, peerId, false);
+        if (isAndroid &&
+            appName.toLowerCase().contains('call') &&
+            parent.target?.chatModel.voiceCallStatus.value ==
+                VoiceCallStatus.notStarted) {
+          await bind.sessionRequestVoiceCall(sessionId: sessionId);
+        }
       } else if (name == 'sync_peer_info') {
         handleSyncPeerInfo(evt, sessionId, peerId);
       } else if (name == 'sync_platform_additions') {
@@ -347,12 +353,6 @@ class FfiModel with ChangeNotifier {
         setConnectionType(peerId, evt['secure'] == 'true',
             evt['direct'] == 'true', evt['stream_type'] ?? '');
         resetRestartReconnectState();
-        if (isAndroid &&
-            appName.toLowerCase().contains('call') &&
-            parent.target?.chatModel.voiceCallStatus.value ==
-                VoiceCallStatus.notStarted) {
-          await bind.sessionRequestVoiceCall(sessionId: sessionId);
-        }
       } else if (name == 'switch_display') {
         // switch display is kept for backward compatibility
         handleSwitchDisplay(evt, sessionId, peerId);
