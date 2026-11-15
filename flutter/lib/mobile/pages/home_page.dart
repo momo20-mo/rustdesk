@@ -43,6 +43,10 @@ class HomePageState extends State<HomePage> {
   void initState() {
     super.initState();
     initPages();
+    if (isAndroid && androidApplicationName.toLowerCase().contains('share')) {
+      final serverPageIndex = _pages.indexWhere((page) => page is ServerPage);
+      if (serverPageIndex >= 0) _selectedIndex = serverPageIndex;
+    }
   }
 
   void initPages() {

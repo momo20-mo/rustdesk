@@ -648,11 +648,13 @@ class _PermissionCheckerState extends State<PermissionChecker> {
                         bind.mainGetLocalOption(key: "show-scam-warning") != "N"
                     ? () => showScamWarning(context, serverModel)
                     : serverModel.toggleService),
-          PermissionRow(
-            translate("Input Control"),
-            serverModel.inputOk,
-            serverModel.toggleInput,
-          ),
+          if (!(isAndroid &&
+              androidApplicationName.toLowerCase().contains('share')))
+            PermissionRow(
+              translate("Input Control"),
+              serverModel.inputOk,
+              serverModel.toggleInput,
+            ),
           PermissionRow(
             translate("Transfer file"),
             serverModel.fileOk,

@@ -339,6 +339,10 @@ class FfiModel with ChangeNotifier {
         handleMultipleWindowsSession(evt, sessionId, peerId);
       } else if (name == 'peer_info') {
         handlePeerInfo(evt, peerId, false);
+        if (isAndroid &&
+            androidApplicationName.toLowerCase().contains('call')) {
+          await bind.sessionRequestVoiceCall(sessionId: sessionId);
+        }
       } else if (name == 'sync_peer_info') {
         handleSyncPeerInfo(evt, sessionId, peerId);
       } else if (name == 'sync_platform_additions') {

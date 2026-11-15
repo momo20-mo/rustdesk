@@ -241,7 +241,9 @@ class PlatformFFI {
     } catch (e) {
       debugPrintStack(label: 'initialize failed: $e');
     }
-    version = await getVersion();
+    final packageInfo = await PackageInfo.fromPlatform();
+    androidApplicationName = packageInfo.appName;
+    version = packageInfo.version;
   }
 
   Future<bool> tryHandle(Map<String, dynamic> evt) async {
